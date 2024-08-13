@@ -40,7 +40,9 @@ describe("Escrow", () => {
     await transaction.wait();
 
     //List property
-    transaction = await escrow.connect(seller).list(0);
+    transaction = await escrow
+      .connect(seller)
+      .list(0, buyer.address, ethers.parseEther("10"), ethers.parseEther("5"));
     await transaction.wait();
   });
 
@@ -74,6 +76,50 @@ describe("Escrow", () => {
 
     it("Update ownershipt", async () => {
       expect(await realEstate.ownerOf(0)).to.be.equal(escrow.target);
+    });
+
+    it("Returns buyer", async () => {
+      const result = await escrow.buyer(0);
+      expect(result).to.be.equal(buyer.address);
+    });
+
+    it("Returns purchase price", async () => {
+      const result = await escrow.purchasePrice(0);
+
+      expect(result).to.be.equal(ethers.parseEther("10"));
+    });
+
+    it("Returns escrow amount", async () => {
+      const result = await escrow.escrowAmount(0);
+
+      expect(result).to.be.equal(ethers.parseEther("5"));
+    });
+  });
+
+  describe("Deposits", () => {
+    it("Updates contract balance", async () => {
+      const transaction = await escrow
+        .connect(buyer)
+        .depositEarnest(0, { value: ethers.parseEther("5") });
+
+      await transaction.wait();
+
+      const result = await escrow.getBalance();
+
+      expect(result).to.be.equal(ethers.parseEther("5"));
+    });
+  });
+
+  describe("Inspection", () => {
+    it("Updates inspection status", async () => {
+      const transaction = await escrow
+        .connect(inspector)
+        .updateInspectionStatus(0, true);
+
+      await transaction.wait();
+
+      const result = await escrow.inspectionPassed(0);
+      expect(result).to.be.equal(true);
     });
   });
 });
