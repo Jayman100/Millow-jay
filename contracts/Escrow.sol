@@ -137,4 +137,16 @@ contract Escrow {
         // Transfer NFT to buyer
         IERC721(nftAddress).transferFrom(address(this), buyer[_nftId], _nftId);
     }
+
+    // Cancel Sale (handle deposit earnest )
+
+    //-> If inspection status is not approve, then refund, otherwise send balance to seller
+
+    function cancelSale(uint256 _nftId) public {
+        if (inspectionPassed[_nftId] == false) {
+            payable(buyer[_nftId]).transfer(address(this).balance);
+        } else {
+            payable(seller).transfer(address(this).balance);
+        }
+    }
 }

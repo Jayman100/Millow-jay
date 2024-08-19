@@ -175,5 +175,18 @@ describe("Escrow", () => {
     it("Updates ownership", async () => {
       expect(await realEstate.ownerOf(0)).to.be.equal(buyer.address);
     });
+
+    it("Cancel sale", async () => {
+      let result = await escrow.connect(seller).cancelSale(0);
+      let transaction = await escrow
+        .connect(inspector)
+        .updateInspectionStatus(0, false);
+      await transaction.wait;
+
+      expect(await escrow.getBalance()).to.be.equal(0);
+      expect(await ethers.provider.getBalance(buyer.address)).to.be.gt(
+        ethers.parseEther("5")
+      );
+    });
   });
 });
